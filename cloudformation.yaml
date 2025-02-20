@@ -1,0 +1,128 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "CloudFormation talentotech task"
+
+Parameters:
+  pFromPort:
+    Type: String
+    Description: "Ingress Port"
+  
+  pToPort:
+    Type: String
+    Description: "To Port"
+  
+  pTargetGroupPort:
+    Type: String
+    Description: "Port of the target group"
+  
+  pProtocol:
+    Type: String
+    Description: "Protocol of the target group"
+    AllowedValues: [HTTP]
+  
+  pVPC:
+    Type: AWS::EC2::VPC::Id
+    Description: "VPC (Virtual Private Cloud) ID"
+  
+  pSubnets:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: "Subnets of the VPC"
+
+  pListenerProtocol:
+    Type: String
+    Description: "Protocolo receptor del ALB Listener"
+
+  pEnvironment:
+    Type: String
+    Description: "Ambiente de despliegue de la aplicacion"
+  
+  pApplicationCode:
+    Type: String
+    Description: "Estandar de aplicacion para despliegues"
+    
+Resources:
+  rS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: talentotech-task
+  
+  rEC2:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-053a45fff0a704a47
+      InstanceType: t2.micro
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 10
+            VolumeType: gp3
+  
+  rSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http trough port 80
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort:
+            Ref: pFromPort
+          ToPort:
+            Ref: pToPort
+
+  rLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Subnets:
+        Ref: pSubnets
+      SecurityGroups:
+        - Ref: rALBSecurityGroup
+      Scheme: internet-facing
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds
+          Value: "60"
+
+  rListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      Port: 
+        Ref: pFromPort
+      LoadBalancerArn: 
+          Fn::GetAtt: [rLoadBalancer, LoadBalancerArn]
+      DefaultActions: 
+        - Type: forward
+          TargetGroupArn: 
+            Ref: rTargetGroup
+      Protocol: 
+        Ref: pListenerProtocol
+
+  rTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: "generic-name"
+      VpcId:
+        Ref: pVPC
+      Port:
+        Ref: pTargetGroupPort
+      Protocol: 
+        Ref: pProtocol
+      TargetType: instance
+      HealthCheckIntervalSeconds: 30
+      HealthCheckProtocol:
+        Ref: pProtocol
+      HealthCheckPath: /
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 5
+
+  rALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security group for ALB"
+      VpcId: 
+        Ref: pVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 
+            Ref: pFromPort
+          ToPort: 
+            Ref: pToPort
+  

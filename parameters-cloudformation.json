@@ -1,0 +1,38 @@
+[
+    {
+      "ParameterKey": "pFromPort",
+      "ParameterValue": "80"
+    },
+    {
+      "ParameterKey": "pToPort",
+      "ParameterValue": "80"
+    },
+    {
+      "ParameterKey": "pTargetGroupPort",
+      "ParameterValue": "80"
+    },
+    {
+      "ParameterKey": "pProtocol",
+      "ParameterValue": "HTTP"
+    },
+    {
+      "ParameterKey": "pVPC",
+      "ParameterValue": "vpc-093f69bcc7ce5ef1a"
+    },
+    {
+      "ParameterKey": "pSubnets",
+      "ParameterValue": "subnet-09c4cb1e2fb0eb925,subnet-01e1fe8d5cdfd44ba"
+    },
+    {
+      "ParameterKey": "pListenerProtocol",
+      "ParameterValue": "HTTP"
+    },
+    {
+      "ParameterKey": "pEnvironment",
+      "ParameterValue": "Development"
+    },
+    {
+      "ParameterKey": "pApplicationCode",
+      "ParameterValue": "TestApplicationCode"
+    }
+  ]
